@@ -22,6 +22,7 @@ import java.util.Optional;
 
 public class Main extends Application {
 
+    private String version = "0.9.1";
     private TableView tabulka = new TableView();
     private ObservableList<Praca> zoznam = FXCollections.observableArrayList();
     ObservableList<String> ludia = FXCollections.observableArrayList("Zoltán Balogh", "Ľubomír Benko", "Mária Burianová","Martin Cápay","Martin Drlík","Jan Francisti","Dominik Halvoník","Jozef Kapusta","Nika Klimová","Michal Kohútek","Štefan Koprda","Roman Krnáč","Gabriela Lovászová","Martin Magdin","Viera Michaličková","Marián Mudrák","Michal Munk","Juraj Obonya","Jaroslav Reichel","Ján Skalka","Peter Švec","Júlia Tomanová","Tomáš Tóth","Milan Turčáni","Martin Vozár");
@@ -37,7 +38,7 @@ public class Main extends Application {
         naplnTabulku();
         nacitajPrace();
 
-        Label popis = new Label("Evidencia posudkov\nVersion 0.9\n@ 2020 Ľubomír Benko");
+        Label popis = new Label("Evidencia posudkov\nVersion "+version+"\n@ 2020 Ľubomír Benko");
         Button pridaj = new Button("Pridaj novú prácu");
         pridaj.setOnAction(e->{
             try {
@@ -297,6 +298,17 @@ public class Main extends Application {
             stage.close();
         });
 
+        Button notes = new Button("Poznámky");
+        notes.setOnAction(e->{
+            if(koho==1) {
+                praca.getPosudok_skolitel().savePosudok(crit1.getText(),crit2.getText(),crit3.getText(),crit4.getText(),crit5.getText(),crit6.getText(),crit7.getText(),crit8.getText(),crit9.getText(),crit10.getText(),crit11.getText(),crit12.getText(),crit13.getText(),eval1.getValue(),eval2.getValue(),eval3.getValue(),eval4.getValue(),eval5.getValue(),eval6.getValue(),eval7.getValue(),eval8.getValue(),eval9.getValue(),evalCOM.getValue());
+            } else {
+                praca.getPosudok_oponent().savePosudok(crit1.getText(),crit2.getText(),crit3.getText(),crit4.getText(),crit5.getText(),crit6.getText(),crit7.getText(),crit8.getText(),crit9.getText(),crit10.getText(),crit11.getText(),crit12.getText(),crit13.getText(),eval1.getValue(),eval2.getValue(),eval3.getValue(),eval4.getValue(),eval5.getValue(),eval6.getValue(),eval7.getValue(),eval8.getValue(),eval9.getValue(),evalCOM.getValue());
+            }
+            praca.ulozPosudky();
+            oknoPoznamky(praca, koho, index);
+        });
+
         //rozmiestnenie textov do gridov
         GridPane g = new GridPane();
         g.getColumnConstraints().add(new ColumnConstraints(250)); //0
@@ -328,6 +340,7 @@ public class Main extends Application {
         g.add(lab13,6,6,2,1); g.add(crit13,6,7,2,1);
         g.add(lab14,6,8); g.add(evalCOM,7,8);
         g.add(save,6,9); g.add(back,7,9);
+        g.add(notes,4,9);
 
 
 
@@ -352,6 +365,82 @@ public class Main extends Application {
             }
         });
         stage.show();
+    }
+
+    private void oknoPoznamky(Praca praca, int koho, int index) {
+        HBox groot = new HBox(5);
+        groot.setPadding(new Insets(0, 0, 0, 5));
+        ScrollPane scrollPane = new ScrollPane(groot);
+        scrollPane.setFitToHeight(true);
+        BorderPane root = new BorderPane(scrollPane);
+        Stage stage = new Stage();
+
+        Label label = new Label("Poznámky k práci\n");
+        TextArea text;
+        if(koho==1) {
+            praca.getPosudok_skolitel().nacitajPoznamka(praca.getStudent());
+            text = new TextArea(praca.getPosudok_skolitel().getPoznamky());
+        }
+        else {
+            praca.getPosudok_oponent().nacitajPoznamka(praca.getStudent());
+            text = new TextArea(praca.getPosudok_oponent().getPoznamky());
+        }
+        text.setWrapText(true); text.setMaxWidth(380);
+
+        Button back = new Button("Späť");
+        back.setOnAction(e->{
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Potvrdenie");
+            alert.setHeaderText("Naozaj chcete opustiť úpravu poznámky?");
+            ButtonType buttonTypeOne = new ButtonType("ÁNO");
+            ButtonType buttonTypeCancel = new ButtonType("NIE", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeCancel);
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == buttonTypeOne){
+                if(koho==1) praca.getPosudok_skolitel().ulozPoznamka(praca, text.getText());
+                else praca.getPosudok_oponent().ulozPoznamka(praca, text.getText());
+                stage.close();
+            } else {
+                e.consume();
+            }
+        });
+
+        Button save = new Button("Uložiť a zavrieť");
+        save.setOnAction(e->{
+            if(koho==1) praca.getPosudok_skolitel().ulozPoznamka(praca, text.getText());
+            else praca.getPosudok_oponent().ulozPoznamka(praca, text.getText());
+            stage.close();
+        });
+
+        GridPane g = new GridPane();
+        g.getColumnConstraints().add(new ColumnConstraints(200)); //0
+        g.getColumnConstraints().add(new ColumnConstraints(200)); //1
+        g.add(label,0,0,2,1); g.add(text,0,1,2,1);
+        g.add(save,0,2); g.add(back,1,2);
+
+        groot.getChildren().addAll(g);
+        stage.setTitle("Vlastné poznámky - "+praca.getStudent());
+        stage.setScene(new Scene(root, 400,250));
+        stage.setOnCloseRequest(e->{
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Potvrdenie");
+            alert.setHeaderText("Naozaj chcete opustiť úpravu poznámky?");
+            ButtonType buttonTypeOne = new ButtonType("ÁNO");
+            ButtonType buttonTypeCancel = new ButtonType("NIE", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeCancel);
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == buttonTypeOne){
+                if(koho==1) praca.getPosudok_skolitel().ulozPoznamka(praca, text.getText());
+                else praca.getPosudok_oponent().ulozPoznamka(praca, text.getText());
+                stage.close();
+            } else {
+                e.consume();
+            }
+        });
+        stage.show();
+
     }
 
 

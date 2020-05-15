@@ -1,9 +1,6 @@
 package sample;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class Posudok {
 
@@ -30,8 +27,10 @@ public class Posudok {
     private String eval8=" ";
     private String eval9=" ";
     private String complex_evaluation = " ";
+    private String file_poznamky = " ";
+    private String poznamky = " ";
 
-    public Posudok(String filename) {
+    public Posudok(String filename, String student) {
         try {
             BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("data/"+filename),"UTF-8"));
             String riadok = ""; //alebo nacitat cely subor naraz a prehladavat oddelovace, v principe jeden subor, jeden posudok, cize takto to bude jeden riadok
@@ -48,12 +47,16 @@ public class Posudok {
             crit1 = pom[0]; eval1 = pom[1]; crit2 = pom[2]; eval2 = pom[3]; crit3 = pom[4]; eval3 = pom[5]; crit4 = pom[6]; eval4 = pom[7];
             crit5 = pom[8]; eval5 = pom[9]; crit6 = pom[10]; eval6 = pom[11]; crit7 = pom[12]; eval7 = pom[13]; crit8 = pom[14]; eval8 = pom[15];
             crit9 = pom[16]; eval9 = pom[17]; crit10 = pom[18]; crit11 = pom[19]; crit12 = pom[20]; crit13 = pom[21]; complex_evaluation = pom[22];
+            file_poznamky = pom[23];
+
+            nacitajPoznamka(student);
         } catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Posudok() {
+    public Posudok(String student) {
+        nacitajPoznamka(student);
     }
 
     public Posudok(String crit1, String crit2, String crit3, String crit4, String crit5, String crit6, String crit7, String crit8, String crit9, String crit10, String crit11, String crit12, String crit13, String eval1, String eval2, String eval3, String eval4, String eval5, String eval6, String eval7, String eval8, String eval9, String complex_evaluation) {
@@ -82,7 +85,56 @@ public class Posudok {
                 .append(crit8).append(del).append(eval8).append(del)
                 .append(crit9).append(del).append(eval9).append(del)
                 .append(crit10).append(del).append(crit11).append(del).append(crit12).append(del)
-                .append(crit13).append(del).append(complex_evaluation).toString();
+                .append(crit13).append(del).append(complex_evaluation).append(del).append(file_poznamky).toString();
+    }
+
+    public void ulozPoznamka(Praca praca, String text) {
+        try {
+            if(file_poznamky.equals(" ")) file_poznamky = praca.getStudent()+"_poznamky.dat";
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("data/"+file_poznamky), "UTF-8"));
+            poznamky = text;
+            bw.write(text);
+            bw.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void nacitajPoznamka(String student) {
+        try {
+            if(poznamky.equals(" ")) {
+                if (file_poznamky.equals(" ")) file_poznamky = student + "_poznamky.dat";
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("data/" + file_poznamky), "UTF-8"));
+                String text = "";
+                String riadok = "";
+                while(riadok!=null) {
+                    riadok = br.readLine();
+                    if(riadok!=null) {
+                        text = text+riadok+"\n";
+                    }
+                }
+                poznamky = text;
+                br.close();
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getFile_poznamky() {
+        return file_poznamky;
+    }
+
+    public void setFile_poznamky(String file_poznamky) {
+        this.file_poznamky = file_poznamky;
+    }
+
+    public String getPoznamky() {
+        return poznamky;
+    }
+
+    public void setPoznamky(String poznamky) {
+        this.poznamky = poznamky;
     }
 
     public String getCrit1() {

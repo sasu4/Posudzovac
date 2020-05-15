@@ -38,10 +38,10 @@ public class Praca {
         this.znamka_oponent = znamka_oponent;
         this.file_skolitel = file_skolitel;
         this.file_oponent = file_oponent;
-        if(!file_skolitel.equals(" ")) posudok_skolitel = new Posudok(file_skolitel);
-        else posudok_skolitel = new Posudok();
-        if(!file_oponent.equals(" ")) posudok_oponent = new Posudok(file_oponent);
-        else posudok_oponent = new Posudok();
+        if(!file_skolitel.equals(" ")) posudok_skolitel = new Posudok(file_skolitel, student);
+        else posudok_skolitel = new Posudok(student);
+        if(!file_oponent.equals(" ")) posudok_oponent = new Posudok(file_oponent, student);
+        else posudok_oponent = new Posudok(student);
     }
 
     public String toString() {
